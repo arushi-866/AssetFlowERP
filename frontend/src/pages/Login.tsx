@@ -13,34 +13,23 @@ export const Login: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // Fetch departments for registration dropdown
+  const fallbackDepartments = [
+    { id: '11111111-1111-1111-1111-111111111111', name: 'Engineering' },
+    { id: '11111111-1111-1111-1111-111111111112', name: 'Facilities' },
+    { id: '11111111-1111-1111-1111-111111111113', name: 'Operations' },
+  ];
+
   useEffect(() => {
     const fetchDepts = async () => {
       try {
-        const res = await fetch('http://localhost:5001/api/auth/login'); // anyone can probe public config or open signup
-        // wait, let's just make a public endpoint or fetch it. Actually we can do it via a simple endpoint.
-        // For public signups, we can make `/api/auth/signup` open. Let's just fetch from api/org/departments but that is authenticated.
-        // Let's write a try block or fallback to a hardcoded department list if auth fails, or we can fetch.
-        // Let's see: public endpoints. We will fetch from 'http://localhost:5001/api/auth/signup' where we can return departments!
-        // Wait, let's check if we have a public department retrieval or fallback. Let's write a fetch with catch and fallback.
-        const resDepts = await fetch('http://localhost:5001/api/org/departments'); // if it fails we load hardcoded
-        if (resDepts.ok) {
-          const data = await resDepts.json();
-          setDepartments(data);
+        const res = await fetch('http://localhost:5001/api/auth/departments');
+        if (res.ok) {
+          setDepartments(await res.json());
         } else {
-          // Hardcoded fallbacks to match seed data
-          setDepartments([
-            { id: '11111111-1111-1111-1111-111111111111', name: 'Engineering' },
-            { id: '11111111-1111-1111-1111-111111111112', name: 'Facilities' },
-            { id: '11111111-1111-1111-1111-111111111113', name: 'Operations' },
-          ]);
+          setDepartments(fallbackDepartments);
         }
-      } catch (err) {
-        setDepartments([
-          { id: '11111111-1111-1111-1111-111111111111', name: 'Engineering' },
-          { id: '11111111-1111-1111-1111-111111111112', name: 'Facilities' },
-          { id: '11111111-1111-1111-1111-111111111113', name: 'Operations' },
-        ]);
+      } catch {
+        setDepartments(fallbackDepartments);
       }
     };
     fetchDepts();

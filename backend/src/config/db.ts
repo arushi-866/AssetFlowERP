@@ -3,13 +3,14 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const databaseUrl = process.env.DATABASE_URL || 'postgresql://arushi@localhost:5432/assetflow';
+const databaseUrl =
+  process.env.DATABASE_URL || 'postgresql://postgres:postgres@127.0.0.1:5432/assetflow';
 
 export const pool = new Pool({
   connectionString: databaseUrl,
   max: 20,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 5000,
 });
 
 pool.on('error', (err) => {

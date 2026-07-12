@@ -1,11 +1,22 @@
 import { Response, Router } from 'express';
 import { AuthService } from '../services/auth.service';
 import { UserRepository } from '../repositories/user.repository';
+import { DepartmentRepository } from '../repositories/department.repository';
 import { validateRequest } from '../middleware/validation';
 import { loginSchema, signupSchema, promoteSchema } from '../validators/auth.validator';
 import { authenticateJWT, requireRole, AuthenticatedRequest } from '../middleware/auth';
 
 const router = Router();
+
+// Public departments list for signup form
+router.get('/departments', async (req, res, next) => {
+  try {
+    const list = await DepartmentRepository.findAllDepartments();
+    res.json(list.map((d) => ({ id: d.id, name: d.name })));
+  } catch (err) {
+    next(err);
+  }
+});
 
 // Signup endpoint (creates Employee role only)
 router.post(

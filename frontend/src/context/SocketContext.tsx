@@ -36,28 +36,20 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       ws = new WebSocket('ws://localhost:5001/ws');
 
       ws.onopen = () => {
-        console.log('[WebSocket Connected]');
         setConnected(true);
-        // Authenticate socket
         ws.send(JSON.stringify({ type: 'auth', token }));
       };
 
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          
-          if (data.type === 'auth_success') {
-            console.log('[WebSocket Authenticated]');
-          }
-          
+
           if (data.type === 'KPI_UPDATE') {
-            console.log('[WebSocket Event: KPI_UPDATE]', data.payload);
             setKpiTrigger((prev) => prev + 1);
           }
 
           if (data.type === 'NOTIFICATIONS_UPDATE') {
             if (data.payload.userId === user.id) {
-              console.log('[WebSocket Event: NOTIFICATIONS_UPDATE]');
               setNotifTrigger((prev) => prev + 1);
               showToast('You have a new unread notification alert.');
             }
@@ -68,13 +60,12 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       };
 
       ws.onclose = () => {
-        console.log('[WebSocket Disconnected]. Retrying...');
         setConnected(false);
         reconnectTimeout = setTimeout(connect, 3000);
       };
 
-      ws.onerror = (error) => {
-        console.error('[WebSocket Error]', error);
+      ws.onerror = () => {
+        // onclose handles reconnect; browser error events are often empty
         ws.close();
       };
     };

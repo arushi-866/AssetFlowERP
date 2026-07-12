@@ -12,6 +12,9 @@ build/
 .env.*.local
 *.env
 
+# Local embedded PostgreSQL data
+backend/.pgdata/
+
 # OS files
 .DS_Store
 Thumbs.db

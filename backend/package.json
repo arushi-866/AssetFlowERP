@@ -6,7 +6,9 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "ts-node-dev --respawn --transpile-only src/index.ts"
+    "dev": "node scripts/dev-with-db.js",
+    "dev:server": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "db:setup": "node scripts/setup-db.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -15,6 +17,7 @@
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.11.5",
+    "vite": "^8.1.4",
     "ws": "^8.17.0",
     "zod": "^3.23.8"
   },
@@ -26,6 +29,7 @@
     "@types/node": "^20.12.12",
     "@types/pg": "^8.11.6",
     "@types/ws": "^8.5.10",
+    "embedded-postgres": "^18.4.0-beta.17",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.4.5"
   }

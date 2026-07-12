@@ -8,6 +8,24 @@ export function errorHandler(
 ) {
   console.error('[Error Handler]', err);
 
+  const connectionError =
+    err.code === 'ECONNREFUSED' ||
+    err.code === 'ENOTFOUND' ||
+    err.errors?.some((e: { code?: string }) => e.code === 'ECONNREFUSED');
+
+  if (connectionError) {
+    return res.status(503).json({
+      message:
+        'Database is unavailable. Start PostgreSQL and run npm run db:setup in the backend folder.',
+    });
+  }
+
+  if (err.code === '3D000') {
+    return res.status(503).json({
+      message: 'Database not initialized. Run npm run db:setup in the backend folder.',
+    });
+  }
+
   // Check for Postgres errors
   if (err.code) {
     switch (err.code) {

@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const createAuditCycleSchema = z.object({
   name: z.string().min(3, 'Audit name must be at least 3 characters'),
-  scopeDepartmentId: z.string().uuid('Invalid department ID').optional().nullable(),
+  scopeDepartmentId: z.string().uuid('Invalid department ID').optional().nullable().or(z.literal('')),
   scopeLocation: z.string().optional().nullable(),
   startDate: z.string().refine((val) => !isNaN(Date.parse(val)), {
     message: 'Start date must be a valid date string',

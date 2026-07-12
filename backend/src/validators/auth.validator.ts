@@ -18,3 +18,12 @@ export const promoteSchema = z.object({
     errorMap: () => ({ message: 'Invalid role selection. Choose ADMIN, ASSET_MANAGER, DEPARTMENT_HEAD, or EMPLOYEE' }),
   }),
 });
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().email('Invalid email address format'),
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(20, 'Invalid password reset token'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});

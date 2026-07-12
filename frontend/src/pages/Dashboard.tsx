@@ -194,14 +194,29 @@ export const Dashboard: React.FC = () => {
 
   const handleRaiseMaintenanceSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!maintenanceForm.assetId) {
+      return alert('Please select an asset to raise maintenance on.');
+    }
+    if (maintenanceForm.description.trim().length < 5) {
+      return alert('Please provide a more detailed description of the issue.');
+    }
+    if (!['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].includes(maintenanceForm.priority)) {
+      return alert('Please select a valid priority level.');
+    }
+
     try {
+      const payload = {
+        ...maintenanceForm,
+        photoUrl: '',
+      };
+
       const res = await fetch('http://localhost:5001/api/maintenance', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(maintenanceForm),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {

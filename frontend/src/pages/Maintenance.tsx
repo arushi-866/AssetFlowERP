@@ -20,7 +20,7 @@ export const Maintenance: React.FC = () => {
   const [showResolveModal, setShowResolveModal] = useState(false);
 
   // Form Fields
-  const [raiseForm, setRaiseForm] = useState({ assetId: '', description: '', priority: 'MEDIUM' });
+  const [raiseForm, setRaiseForm] = useState({ assetId: '', description: '', priority: 'MEDIUM', photoUrl: '' });
   const [assignForm, setAssignForm] = useState({ requestId: '', technicianId: '' });
   const [resolveForm, setResolveForm] = useState({ requestId: '', cost: 0, resolutionNotes: '' });
 
@@ -59,6 +59,16 @@ export const Maintenance: React.FC = () => {
 
   const handleRaiseSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!raiseForm.assetId) {
+      return alert('Please select an asset to raise maintenance for.');
+    }
+    if (raiseForm.description.trim().length < 5) {
+      return alert('Please provide more details in the issue description.');
+    }
+    if (!['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'].includes(raiseForm.priority)) {
+      return alert('Please select a valid priority.');
+    }
+
     try {
       const res = await fetch('http://localhost:5001/api/maintenance', {
         method: 'POST',
@@ -66,7 +76,7 @@ export const Maintenance: React.FC = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(raiseForm),
+        body: JSON.stringify({ ...raiseForm, photoUrl: '' }),
       });
 
       if (!res.ok) {
@@ -76,7 +86,7 @@ export const Maintenance: React.FC = () => {
 
       showToast('Maintenance request successfully raised');
       setShowRaiseModal(false);
-      setRaiseForm({ assetId: '', description: '', priority: 'MEDIUM' });
+      setRaiseForm({ assetId: '', description: '', priority: 'MEDIUM', photoUrl: '' });
       loadData();
     } catch (err: any) {
       alert(err.message);

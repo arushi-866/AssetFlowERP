@@ -3,7 +3,7 @@ import { AuthService } from '../services/auth.service';
 import { UserRepository } from '../repositories/user.repository';
 import { DepartmentRepository } from '../repositories/department.repository';
 import { validateRequest } from '../middleware/validation';
-import { loginSchema, signupSchema, promoteSchema } from '../validators/auth.validator';
+import { loginSchema, signupSchema, promoteSchema, forgotPasswordSchema, resetPasswordSchema } from '../validators/auth.validator';
 import { authenticateJWT, requireRole, AuthenticatedRequest } from '../middleware/auth';
 
 const router = Router();
@@ -42,6 +42,36 @@ router.post(
       const { email, password } = req.body;
       const data = await AuthService.login(email, password);
       res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+// Password reset request
+router.post(
+  '/forgot-password',
+  validateRequest({ body: forgotPasswordSchema }),
+  async (req, res, next) => {
+    try {
+      const { email } = req.body;
+      const response = await AuthService.requestPasswordReset(email);
+      res.json(response);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+// Password reset confirmation
+router.post(
+  '/reset-password',
+  validateRequest({ body: resetPasswordSchema }),
+  async (req, res, next) => {
+    try {
+      const { token, password } = req.body;
+      await AuthService.resetPassword(token, password);
+      res.json({ message: 'Password has been reset successfully. You can now sign in with your new password.' });
     } catch (err) {
       next(err);
     }

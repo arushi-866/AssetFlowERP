@@ -77,6 +77,19 @@ export class UserRepository {
     return res.rows[0];
   }
 
+  static async updatePassword(userId: string, passwordHash: string, client?: PoolClient) {
+    const sql = `
+      UPDATE users
+      SET password_hash = $1, updated_at = NOW()
+      WHERE id = $2
+      RETURNING *
+    `;
+    const res = client 
+      ? await client.query(sql, [passwordHash, userId])
+      : await query(sql, [passwordHash, userId]);
+    return res.rows[0];
+  }
+
   static async findAll() {
     const sql = `
       SELECT u.id, u.name, u.email, u.status, u.created_at,

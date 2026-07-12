@@ -79,14 +79,33 @@ export const AuditManagement: React.FC = () => {
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!cycleForm.name.trim()) {
+      return alert('Please enter an audit cycle name.');
+    }
+    if (!cycleForm.startDate || !cycleForm.endDate) {
+      return alert('Please provide both start and end dates.');
+    }
+    if (cycleForm.auditorIds.length === 0) {
+      return alert('Please assign at least one auditor.');
+    }
+
     try {
+      const payload = {
+        name: cycleForm.name.trim(),
+        scopeDepartmentId: cycleForm.scopeDepartmentId || null,
+        scopeLocation: cycleForm.scopeLocation?.trim() || null,
+        startDate: cycleForm.startDate,
+        endDate: cycleForm.endDate,
+        auditorIds: cycleForm.auditorIds,
+      };
+
       const res = await fetch('http://localhost:5001/api/audits', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(cycleForm),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {

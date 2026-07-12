@@ -74,6 +74,56 @@ export class AuthService {
     };
   }
 
+  static async requestPasswordReset(email: string) {
+    const user = await UserRepository.findByEmail(email);
+    if (!user) {
+      return {
+        message: 'If an account exists for this email, a password reset token has been issued.',
+      };
+    }
+
+    if (user.status !== 'ACTIVE') {
+      return {
+        message: 'If an account exists for this email, a password reset token has been issued.',
+      };
+    }
+
+    const resetToken = jwt.sign(
+      {
+        userId: user.id,
+        purpose: 'PASSWORD_RESET',
+      },
+      JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    return {
+      message: 'Password reset token generated. Use this token to reset your password.',
+      token: resetToken,
+    };
+  }
+
+  static async resetPassword(token: string, password123: string) {
+    let payload: any;
+    try {
+      payload = jwt.verify(token, JWT_SECRET) as any;
+    } catch (err) {
+      throw { status: 400, message: 'Invalid or expired password reset token' };
+    }
+
+    if (payload?.purpose !== 'PASSWORD_RESET' || !payload?.userId) {
+      throw { status: 400, message: 'Invalid password reset token' };
+    }
+
+    const user = await UserRepository.findById(payload.userId);
+    if (!user) {
+      throw { status: 400, message: 'Invalid password reset token' };
+    }
+
+    const passwordHash = await bcrypt.hash(password123, 10);
+    await UserRepository.updatePassword(user.id, passwordHash);
+  }
+
   static async promote(adminId: string, employeeId: string, roleName: string) {
     const targetRole = await UserRepository.findRoleByName(roleName);
     if (!targetRole) {

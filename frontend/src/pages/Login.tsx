@@ -5,9 +5,11 @@ import { LayoutDashboard } from 'lucide-react';
 
 export const Login: React.FC = () => {
   const { login, signup } = useAuth();
-  const [isLogin, setIsLogin] = useState(true);
+  const [mode, setMode] = useState<'login' | 'signup' | 'forgot' | 'reset'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [resetToken, setResetToken] = useState('');
   const [name, setName] = useState('');
   const [departmentId, setDepartmentId] = useState('');
   const [departments, setDepartments] = useState<any[]>([]);
@@ -52,17 +54,72 @@ export const Login: React.FC = () => {
     setSuccess(null);
 
     try {
-      if (isLogin) {
+      if (mode === 'login') {
         await login(email, password);
       } else {
         await signup(name, email, password, departmentId || null);
         setSuccess('Account created successfully as an Employee! Please log in.');
-        setIsLogin(true);
+        setMode('login');
         setName('');
         setDepartmentId('');
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred. Please try again.');
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const res = await fetch('http://localhost:5001/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Unable to send password reset link');
+      }
+      setSuccess(data.message || 'If an account exists, a password reset token was sent.');
+      if (data.token) {
+        setResetToken(data.token);
+        setMode('reset');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Unable to send password reset link');
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+    if (password !== confirmPassword) {
+      setError('New password and confirm password must match.');
+      return;
+    }
+
+    try {
+      const res = await fetch('http://localhost:5001/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: resetToken, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Unable to reset password');
+      }
+      setSuccess(data.message || 'Password reset successful. Please sign in.');
+      setMode('login');
+      setPassword('');
+      setConfirmPassword('');
+      setResetToken('');
+    } catch (err: any) {
+      setError(err.message || 'Unable to reset password');
     }
   };
 
@@ -74,7 +131,10 @@ export const Login: React.FC = () => {
           <span>Asset<span>Flow</span></span>
         </div>
         <p className="auth-subtitle">
-          {isLogin ? 'Sign in to access your ERP dashboard' : 'Create an employee account to get started'}
+          {mode === 'login' && 'Sign in to access your ERP dashboard'}
+          {mode === 'signup' && 'Create an employee account to get started'}
+          {mode === 'forgot' && 'Enter your email to receive a password reset token'}
+          {mode === 'reset' && 'Reset your password using the token we issued'}
         </p>
 
         {error && (
@@ -89,8 +149,8 @@ export const Login: React.FC = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          {!isLogin && (
+        <form onSubmit={mode === 'forgot' ? handleForgotPassword : mode === 'reset' ? handleResetPassword : handleSubmit}>
+          {mode === 'signup' && (
             <div className="form-group">
               <label className="form-label">Full Name</label>
               <input
@@ -116,19 +176,48 @@ export const Login: React.FC = () => {
             />
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Password</label>
-            <input
-              type="password"
-              className="form-control"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
+          {(mode === 'login' || mode === 'signup' || mode === 'reset') && (
+            <div className="form-group">
+              <label className="form-label">Password</label>
+              <input
+                type="password"
+                className="form-control"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+          )}
 
-          {!isLogin && (
+          {mode === 'reset' && (
+            <>
+              <div className="form-group">
+                <label className="form-label">Reset Token</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Enter reset token"
+                  value={resetToken}
+                  onChange={(e) => setResetToken(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Confirm Password</label>
+                <input
+                  type="password"
+                  className="form-control"
+                  placeholder="••••••••"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </div>
+            </>
+          )}
+
+          {mode === 'signup' && (
             <div className="form-group">
               <label className="form-label">Department</label>
               <select
@@ -153,26 +242,61 @@ export const Login: React.FC = () => {
           )}
 
           <button type="submit" className="btn btn-primary btn-block" style={{ marginTop: 10 }}>
-            {isLogin ? 'Sign In' : 'Create Account'}
+            {mode === 'login' && 'Sign In'}
+            {mode === 'signup' && 'Create Account'}
+            {mode === 'forgot' && 'Send Reset Token'}
+            {mode === 'reset' && 'Reset Password'}
           </button>
         </form>
 
         <div style={{ textAlign: 'center', marginTop: 24, fontSize: 13, color: 'var(--text-secondary)' }}>
-          {isLogin ? (
+          {mode === 'login' && (
             <>
-              New here?{' '}
-              <button 
-                onClick={() => setIsLogin(false)} 
+              <button
+                onClick={() => setMode('forgot')}
+                style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontWeight: 600, cursor: 'pointer' }}
+              >
+                Forgot password?
+              </button>
+              <span style={{ margin: '0 8px' }}>•</span>
+              <button
+                onClick={() => setMode('signup')}
                 style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontWeight: 600, cursor: 'pointer' }}
               >
                 Create an employee account
               </button>
             </>
-          ) : (
+          )}
+
+          {mode === 'signup' && (
             <>
               Already have an account?{' '}
-              <button 
-                onClick={() => setIsLogin(true)} 
+              <button
+                onClick={() => setMode('login')}
+                style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontWeight: 600, cursor: 'pointer' }}
+              >
+                Sign In
+              </button>
+            </>
+          )}
+
+          {mode === 'forgot' && (
+            <>
+              Remembered your password?{' '}
+              <button
+                onClick={() => setMode('login')}
+                style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontWeight: 600, cursor: 'pointer' }}
+              >
+                Sign In
+              </button>
+            </>
+          )}
+
+          {mode === 'reset' && (
+            <>
+              Want to go back?{' '}
+              <button
+                onClick={() => setMode('login')}
                 style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontWeight: 600, cursor: 'pointer' }}
               >
                 Sign In

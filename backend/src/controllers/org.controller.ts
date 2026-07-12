@@ -182,4 +182,14 @@ router.get('/employees', authenticateJWT, async (req, res, next) => {
   }
 });
 
+// LOCATIONS
+router.get('/locations', authenticateJWT, async (req, res, next) => {
+  try {
+    const list = await DepartmentRepository.findAllLocations();
+    res.json(list);
+  } catch (err) {
+    next(err);
+  }
+});
+
 export default router;

@@ -10,6 +10,7 @@ export const AssetDirectory: React.FC = () => {
   const [assets, setAssets] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
+  const [locations, setLocations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Search & Filter state
@@ -41,8 +42,14 @@ export const AssetDirectory: React.FC = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (resDepts.ok) setDepartments(await resDepts.json());
+
+      // 3. Locations
+      const resLocs = await fetch('http://localhost:5001/api/org/locations', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (resLocs.ok) setLocations(await resLocs.json());
     } catch (err) {
-      console.error('Error fetching categories/departments', err);
+      console.error('Error fetching categories/departments/locations', err);
     }
   };
 
@@ -166,11 +173,11 @@ export const AssetDirectory: React.FC = () => {
 
           <select className="form-control" value={selectedLocation} onChange={(e) => setSelectedLocation(e.target.value)}>
             <option value="All">All Locations</option>
-            <option value="Bengaluru Office">Bengaluru</option>
-            <option value="HQ Floor 1">HQ Floor 1</option>
-            <option value="HQ Floor 2">HQ Floor 2</option>
-            <option value="Warehouse">Warehouse</option>
-            <option value="Garage">Garage</option>
+            {locations.map((loc) => (
+              <option key={loc.id} value={loc.name}>
+                {loc.name}
+              </option>
+            ))}
           </select>
         </div>
 

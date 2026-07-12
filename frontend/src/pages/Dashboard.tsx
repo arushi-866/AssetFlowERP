@@ -26,6 +26,7 @@ export const Dashboard: React.FC = () => {
   const [categories, setCategories] = useState<any[]>([]);
   const [bookableAssets, setBookableAssets] = useState<any[]>([]);
   const [allAssets, setAllAssets] = useState<any[]>([]);
+  const [locations, setLocations] = useState<any[]>([]);
 
   const fetchDashboardData = async () => {
     if (!token) return;
@@ -51,7 +52,13 @@ export const Dashboard: React.FC = () => {
       const resCats = await fetch('http://localhost:5001/api/org/categories', {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (resCats.ok) setCategories(await resCats.json());
+      if (resCats.ok) {
+        const cats = await resCats.json();
+        setCategories(cats);
+        if (cats.length > 0) {
+          setAssetForm(prev => ({ ...prev, categoryId: prev.categoryId || cats[0].id }));
+        }
+      }
 
       // 2. All Assets & Bookable Assets
       const resAssets = await fetch('http://localhost:5001/api/assets', {
@@ -61,6 +68,18 @@ export const Dashboard: React.FC = () => {
         const assets = await resAssets.json();
         setAllAssets(assets);
         setBookableAssets(assets.filter((a: any) => a.is_shared_bookable && a.status === 'AVAILABLE'));
+      }
+
+      // 3. Locations
+      const resLocs = await fetch('http://localhost:5001/api/org/locations', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (resLocs.ok) {
+        const locs = await resLocs.json();
+        setLocations(locs);
+        if (locs.length > 0) {
+          setAssetForm(prev => ({ ...prev, location: prev.location || locs[0].name }));
+        }
       }
     } catch (err) {
       console.error('Error fetching form details', err);
@@ -368,14 +387,18 @@ export const Dashboard: React.FC = () => {
                 </div>
                 <div className="form-group">
                   <label className="form-label">Location / Room</label>
-                  <input
-                    type="text"
+                  <select
                     className="form-control"
-                    placeholder="e.g. Bengaluru Office / Floor 4"
                     value={assetForm.location}
                     onChange={(e) => setAssetForm({ ...assetForm, location: e.target.value })}
                     required
-                  />
+                  >
+                    {locations.map((loc: any) => (
+                      <option key={loc.id} value={loc.name}>
+                        {loc.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10 }}>
                   <input

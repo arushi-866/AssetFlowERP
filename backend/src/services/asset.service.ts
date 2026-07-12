@@ -11,6 +11,12 @@ export class AssetService {
       throw { status: 400, message: 'Asset Category does not exist' };
     }
 
+    // 1b. Verify location exists in locations database table
+    const locationExists = await DepartmentRepository.findLocationByName(data.location);
+    if (!locationExists) {
+      throw { status: 400, message: `Location "${data.location}" is not a valid organization location` };
+    }
+
     // 2. Auto-generate next asset tag
     const nextTag = await AssetRepository.getNextAssetTag();
 

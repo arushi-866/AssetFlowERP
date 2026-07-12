@@ -2,7 +2,7 @@
 -- Deterministic UUIDs used for relationships consistency
 
 -- Clean table entries
-TRUNCATE roles, departments, users, asset_categories, assets, asset_allocations, transfer_requests, resource_bookings, maintenance_requests, audit_cycles, audit_auditors, audit_records, notifications, activity_logs CASCADE;
+TRUNCATE roles, departments, users, locations, asset_categories, assets, asset_allocations, transfer_requests, resource_bookings, maintenance_requests, audit_cycles, audit_auditors, audit_records, notifications, activity_logs CASCADE;
 
 -- 1. Insert Roles
 INSERT INTO roles (id, name, description) VALUES
@@ -22,6 +22,14 @@ INSERT INTO users (id, name, email, password_hash, role_id, department_id, statu
 
 -- Link head_id for departments
 UPDATE departments SET head_id = '22222222-2222-2222-2222-222222222221' WHERE id = '11111111-1111-1111-1111-111111111111'; -- Engineering Head: Aditi
+
+-- 3b. Insert Locations
+INSERT INTO locations (name) VALUES
+('Bengaluru Office'),
+('HQ Floor 1'),
+('HQ Floor 2'),
+('Warehouse'),
+('Garage');
 
 -- 4. Insert Asset Categories
 INSERT INTO asset_categories (id, name, custom_fields) VALUES

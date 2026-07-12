@@ -16,6 +16,7 @@ DROP TABLE IF EXISTS resource_bookings CASCADE;
 DROP TABLE IF EXISTS transfer_requests CASCADE;
 DROP TABLE IF EXISTS asset_allocations CASCADE;
 DROP TABLE IF EXISTS assets CASCADE;
+DROP TABLE IF EXISTS locations CASCADE;
 DROP TABLE IF EXISTS asset_categories CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS departments CASCADE;
@@ -63,6 +64,13 @@ CREATE TABLE asset_categories (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(100) UNIQUE NOT NULL,
     custom_fields JSONB DEFAULT '{}'::jsonb NOT NULL, -- schema for dynamic properties
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+-- 4b. Locations table
+CREATE TABLE locations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(100) UNIQUE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 

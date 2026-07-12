@@ -92,4 +92,17 @@ export class DepartmentRepository {
     const res = await query(sql);
     return res.rows;
   }
+
+  // Locations
+  static async findAllLocations() {
+    const sql = `SELECT * FROM locations ORDER BY name ASC`;
+    const res = await query(sql);
+    return res.rows;
+  }
+
+  static async findLocationByName(name: string) {
+    const sql = `SELECT * FROM locations WHERE name = $1`;
+    const res = await query(sql, [name]);
+    return res.rows[0] || null;
+  }
 }
